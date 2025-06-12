@@ -1,0 +1,100 @@
+name: Maritime App CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install backend dependencies
+        run: pip install -r ./maritime-api/requirements.txt
+
+      - name: Run Pytest
+        run: PYTHONPATH=./maritime-api pytest
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 'List all files'
+        run: ls -laR
+
+      - name: Install frontend dependencies
+        working-directory: ./front
+        run: npm install
+
+      - name: Run React tests
+        working-directory: ./front
+        run: npm test -- --watchAll=false
+
+
+  build-and-push-api:
+    needs: test-backend
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Build and push API Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./maritime-api
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/maritime-api:latest
+
+  build-and-push-frontend:
+    needs: test-frontend
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./front
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/maritime-frontend:latest

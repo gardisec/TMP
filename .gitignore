@@ -1,0 +1,13 @@
+
+/maritime-api/venv/
+/front/node_modules/
+/maritime-tg-bot/venv/
+
+/front/build/
+
+.env
+*/.env 
+
+.DS_Store
+*.log
+npm-debug.log*
