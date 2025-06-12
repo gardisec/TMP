@@ -1,6 +1,6 @@
 # front/Dockerfile
 
-# --- Р­РўРђРџ 1: РЎР±РѕСЂРєР° React-РїСЂРёР»РѕР¶РµРЅРёСЏ ---
+# --- ЭТАП 1: Сборка React-приложения ---
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package.json ./
@@ -9,23 +9,26 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# --- Р­РўРђРџ 2: РќР°СЃС‚СЂРѕР№РєР° Nginx РґР»СЏ СЂР°Р·РґР°С‡Рё СЃС‚Р°С‚РёРєРё ---
+# --- ЭТАП 2: Настройка Nginx для раздачи статики ---
 FROM nginx:stable-alpine
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# --- Р”РћР‘РђР’Р›РЇР•Рњ РљРћРџРР РћР’РђРќРР• РЎР•Р РўРР¤РРљРђРўРћР’ ---
-# РЎРѕР·РґР°РµРј РґРёСЂРµРєС‚РѕСЂРёСЋ РґР»СЏ SSL
+# --- ДОБАВЛЯЕМ КОПИРОВАНИЕ СЕРТИФИКАТОВ ---
+# Создаем директорию для SSL
 RUN mkdir -p /etc/nginx/ssl
-# РљРѕРїРёСЂСѓРµРј РєР»СЋС‡ Рё СЃРµСЂС‚РёС„РёРєР°С‚
+# Копируем ключ и сертификат
 COPY nginx-selfsigned.key /etc/nginx/ssl/
 COPY nginx-selfsigned.crt /etc/nginx/ssl/
 # ---------------------------------------------
 
-# РљРѕРїРёСЂСѓРµРј РЅР°С€Сѓ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ Nginx
+# Копируем нашу конфигурацию Nginx
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/
 
+# Открываем порт для HTTP
 EXPOSE 80
-EXPOSE 443 # РћС‚РєСЂС‹РІР°РµРј РїРѕСЂС‚ РґР»СЏ HTTPS
+
+# Открываем порт для HTTPS (ИСПРАВЛЕНО)
+EXPOSE 443
 
 CMD ["nginx", "-g", "daemon off;"]

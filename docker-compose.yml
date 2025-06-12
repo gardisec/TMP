@@ -3,9 +3,7 @@ version: '3.8'
 services:
   api:
     container_name: maritime-api
-    build:
-      context: ./maritime-api
-      dockerfile: Dockerfile
+    image: ghcr.io/gardisec/maritime-api:latest
     restart: unless-stopped
     env_file: .env 
     networks:
@@ -16,9 +14,7 @@ services:
 
   frontend:
     container_name: maritime-frontend
-    build:
-      context: ./front
-      dockerfile: Dockerfile
+    image: ghcr.io/gardisec/maritime-frontend:latest
     restart: unless-stopped
     ports:
       - "80:80"
@@ -30,9 +26,7 @@ services:
 
   telegram-bot:
     container_name: maritime-telegram-bot
-    build:
-      context: ./maritime-tg-bot
-      dockerfile: Dockerfile
+    image: ghcr.io/gardisec/maritime-tg-bot:latest
     restart: unless-stopped
     env_file: .env
     networks:

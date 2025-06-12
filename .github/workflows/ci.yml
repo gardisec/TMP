@@ -98,3 +98,28 @@ jobs:
           context: ./front
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/maritime-frontend:latest
+
+
+  deploy:
+    needs: [build-and-push-api, build-and-push-frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+          
+            cd /root/TMP 
+
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GH_PAT }}
+
+            docker-compose -f docker-compose.yml pull api frontend
+
+            docker-compose -f docker-compose.yml up -d --no-deps api frontend
+
+            docker image prune -f
