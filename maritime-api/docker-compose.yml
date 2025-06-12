@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: maritime-api
+    ports:
+      - "5252:5252"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://admin:123@postgres:5432/maritime_db
+      - JWT_SECRET_KEY=SUPER_MEGA_aboba_boba_biba_aboba
+    networks:
+      - maritime-network
+    restart: unless-stopped
+
+networks:
+  maritime-network:
+    external: true

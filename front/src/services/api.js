@@ -1,6 +1,6 @@
 import { toast } from 'react-hot-toast';
 
-const API_BASE_URL = 'http://localhost:5252/api';
+const API_BASE_URL = '/api';
 
 let isRefreshing = false;
 

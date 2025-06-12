@@ -7,16 +7,13 @@ services:
       context: ./maritime-api
       dockerfile: Dockerfile
     restart: unless-stopped
-    # Загружаем переменные из .env файла
     env_file: .env 
     networks:
       - maritime-network
-    # Запускаем только после того, как база данных будет готова
     depends_on:
       postgres:
         condition: service_healthy
 
-  # 2. Сервис Frontend (Nginx + React)
   frontend:
     container_name: maritime-frontend
     build:
@@ -24,16 +21,13 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      # Открываем порты для веб-трафика
       - "80:80"
       - "443:443"
     networks:
       - maritime-network
-    # Фронтенд зависит от API, чтобы запросы корректно проксировались
     depends_on:
       - api
 
-  # 3. Сервис Telegram-бота
   telegram-bot:
     container_name: maritime-telegram-bot
     build:
@@ -44,29 +38,22 @@ services:
     networks:
       - maritime-network
 
-  # 4. Сервис базы данных PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: maritime-postgres
     restart: unless-stopped
     volumes:
-      # Используем именованный том для сохранения данных БД
       - postgres_data:/var/lib/postgresql/data
-      # Если у вас есть init-скрипты, раскомментируйте эту строку
-      # и убедитесь, что путь ./db_tmp/init корректен
       - ./db_tmp/init:/docker-entrypoint-initdb.d
     env_file: .env
-    # Порт 5432 не открывается наружу для безопасности
     networks:
       - maritime-network
     healthcheck:
-      # Проверяем, готова ли база данных принимать подключения
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  # 5. Сервис PgAdmin для управления базой данных
   pgadmin:
     image: dpage/pgadmin4
     container_name: maritime-pgadmin
@@ -82,12 +69,10 @@ services:
       postgres:
         condition: service_healthy
 
-# Определяем общую сеть для всех сервисов
 networks:
   maritime-network:
     name: maritime-network
 
-# Определяем именованные тома для сохранения данных
 volumes:
   postgres_data:
   pgadmin_data:

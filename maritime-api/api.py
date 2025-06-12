@@ -48,7 +48,7 @@ app.logger.addHandler(stream_handler)
 
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://77.239.102.184:443"],
+        "origins": ["https://77.239.102.184"],
         "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "X-CSRF-TOKEN", "Authorization"],
         "supports_credentials": True,

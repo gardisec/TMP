@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  frontend-prod:
+    container_name: maritime-frontend-prod
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    image: local/maritime-frontend
+    ports:
+      - '8080:80'
+    networks:
+      - maritime-network
+
+networks:
+  maritime-network:
+    external: true
